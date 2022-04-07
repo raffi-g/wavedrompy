@@ -47,37 +47,34 @@ class BitField(SVGBase):
     def vline(self, len, x=0, y=0):
         return self.element.line(start=(x, y), end=(x, y+len))
 
-    def get_text(self, body, x, y=None):
-        x_list = None
-        if x:
-            x_list = [x]
-        y_list = None
-        if y:
-            y_list = [y]
-        text = self.element.text('', x=x_list, y=y_list)
+    def get_text(self, body, x, y=None, rotate=None):
+        x_list = [x] if x else None
+        y_list = [y] if y else None
+        rot_list = [rotate] if rotate else None
+        text = self.element.text('', x=x_list, y=y_list, rotate=rot_list)
         for t in self.tspan_parse(str(body)):
             text.add(t)
         return text
 
-    def get_label(self, attr, x, y, step=0, length=0):
+    def get_label(self, attr, x, y, step=0, length=0, rotate=None):
         if isinstance(attr, int):
             attr = int(attr)
             res = []
             for i in range(length):
                 val = (attr >> i) & 1
                 xi = x + step * (length / 2 - i - 0.5)
-                res.append(self.get_text(val, xi, y))
+                res.append(self.get_text(val, xi, y, rotate=rotate))
             return res
         else:
             if '\n' in attr:
                 names = attr.split('\n')
                 count = len(names)
                 return [
-                    self.get_text(name, x, y + (-(count - 1) /
-                                  2 + i) * self.opt.fontsize)
+                    self.get_text(name, x, y + (-(count - 1) / 2 + i)
+                                  * self.opt.fontsize, rotate=rotate)
                     for (i, name) in enumerate(names)
                 ]
-            return [self.get_text(attr, x, y)]
+            return [self.get_text(attr, x, y, rotate=rotate)]
 
     def get_attrs(self, e, step, lsbm, msbm):
         if self.opt.vflip:
@@ -123,6 +120,8 @@ class BitField(SVGBase):
                 else:
                     continue
 
+            rotate = int(e.get("rotate", 0))
+
             if self.opt.vflip:
                 bits.add(self.get_text(lsb, x=[step*lsbm]))
             else:
@@ -138,7 +137,7 @@ class BitField(SVGBase):
                     x = step*(msbm+lsbm)/2
                 else:
                     x = step*(self.mod-((msbm+lsbm)/2)-1)
-                for n in self.get_label(e['name'], x, 0):
+                for n in self.get_label(e['name'], x, 0, rotate=rotate):
                     names.add(n)
 
             if not e.get('name') or e.get('type'):
