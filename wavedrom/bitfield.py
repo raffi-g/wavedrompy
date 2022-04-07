@@ -205,7 +205,7 @@ class BitField(SVGBase):
             i = self.index
         else:
             i = self.opt.lanes-self.index-1
-        y = i * self.opt.vspace + 0.5
+        y = i * (self.opt.vspace + self.extra_attr_space) + 0.5
         g = self.container.g(transform="translate({},{})".format(x, y),
                              text_anchor="middle",
                              font_size=self.opt.fontsize,
